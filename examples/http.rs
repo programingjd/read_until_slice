@@ -40,7 +40,7 @@ async fn main() {
             // before reaching our delimiter
             assert!(buffer.ends_with(b"\r\n"));
             let status_line = &buffer[..buffer.len() - 2];
-            println!("{}", status_line.escape_ascii().to_string());
+            println!("{}", status_line.escape_ascii());
 
             let mut split = status_line.split(|&b| b == b' ');
             let http_version = split.next().unwrap();
@@ -57,7 +57,7 @@ async fn main() {
                 // before reaching our delimiter
                 assert!(buffer.ends_with(b"\r\n"));
                 let header_line = &buffer[..buffer.len() - 2];
-                println!("{}", header_line.escape_ascii().to_string());
+                println!("{}", header_line.escape_ascii());
                 if header_line.is_empty() {
                     break;
                 };

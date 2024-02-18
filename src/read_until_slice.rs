@@ -67,7 +67,7 @@ pub(crate) fn read_until_slice_internal<R: AsyncBufRead + ?Sized>(
                 let available_len = available.len();
                 if available_len >= delimiter_len - 1 {
                     let start = 1 + available_len - delimiter_len;
-                    partial = available[start..].iter().copied().collect();
+                    partial = available[start..].to_vec();
                 } else {
                     let partial_len = partial.len();
                     if available_len + partial_len < delimiter_len {
@@ -120,6 +120,6 @@ impl<R: AsyncBufRead + ?Sized + Unpin> Future for ReadUntilSlice<'_, '_, R> {
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         let me = self.project();
-        read_until_slice_internal(Pin::new(*me.reader), cx, *me.delimiter, me.buf, me.read)
+        read_until_slice_internal(Pin::new(*me.reader), cx, me.delimiter, me.buf, me.read)
     }
 }
