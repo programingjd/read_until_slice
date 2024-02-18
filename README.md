@@ -26,9 +26,10 @@ let stream = TcpStream::connect(addr)
     .expect("could not connect to remote address");
 // Split stream into reader and writer halves
 let (reader, mut writer) = split(stream);
-// Manual HTTP/1.1 request for /status/200
+// Buffer read stream
 let mut reader = BufReader::new(reader);
 ...
+// Read until new line delimiter into buffer
 let mut buffer = vec![];
 let delimiter = b"\r\n";
 let n = reader.read_until(delimiter, &mut buffer)
