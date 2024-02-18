@@ -13,7 +13,7 @@ While useful, it is limited to a single byte delimiter.
 This crate extends this by taking a slice as a delimiter instead of a single byte.
 
 ```rust
-pub async fn read_until(&mut self, delimiter: u8, buf: Vec<u8>) -> Result<usize>
+pub async fn read_until_slice(&mut self, delimiter: &[u8], buf: Vec<u8>) -> Result<usize>
 ```
 on the same `impl AsyncBufRead + Unpin`.
 
