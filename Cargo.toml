@@ -7,7 +7,7 @@ categories = ["asynchronous"]
 description = "AsyncBufRead::read_until extension to take a slice as a delimiter instead of a single u8."
 keywords = ["tokio","AsyncBufRead","read_until","slice","delimiter"]
 license = "MIT"
-repository = "https://github.com/programingjd/read_util_slice"
+repository = "https://github.com/programingjd/read_until_slice"
 include = [
     "Cargo.toml", "src", "tests", "examples", "LICENSE","README.md"
 ]
