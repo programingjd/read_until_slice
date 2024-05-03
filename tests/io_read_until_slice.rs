@@ -166,3 +166,36 @@ async fn read_until_slice_fail_two_bytes() {
     assert_eq!(err.to_string(), "The world has no end");
     assert_eq!(chunk, b"FooHello \xffWor");
 }
+
+#[tokio::test]
+async fn read_until_slice_small_buffer() {
+    let mock = Builder::new().read(b"Value\r").read(b"\nOther").build();
+
+    let mut read = BufReader::with_capacity(2, mock);
+
+    let mut chunk = b"Foo".to_vec();
+    let bytes = read.read_until_slice(b"\r\n", &mut chunk).await.unwrap();
+    assert_eq!(bytes, b"Value\r\n".len());
+    assert_eq!(chunk, b"FooValue\r\n");
+
+    chunk.clear();
+    let bytes = read.read_until_slice(b"\r\n", &mut chunk).await.unwrap();
+    assert_eq!(bytes, b"Other".len());
+    assert_eq!(chunk, b"Other");
+}
+
+#[tokio::test]
+async fn read_until_slice_delimiter_splitted() {
+    let mock = Builder::new()
+        .read(b"Some\r")
+        .read(b"Other\n")
+        .read(b"Value")
+        .build();
+
+    let mut read = BufReader::new(mock);
+
+    let mut chunk = b"Foo".to_vec();
+    let bytes = read.read_until_slice(b"\r\n", &mut chunk).await.unwrap();
+    assert_eq!(bytes, b"Some\rOther\nValue".len());
+    assert_eq!(chunk, b"FooSome\rOther\nValue");
+}

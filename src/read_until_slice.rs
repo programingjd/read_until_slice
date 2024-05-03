@@ -49,42 +49,15 @@ pub(crate) fn read_until_slice_internal<R: AsyncBufRead + ?Sized>(
     buf: &mut Vec<u8>,
     read: &mut usize,
 ) -> Poll<io::Result<usize>> {
-    let delimiter_len = delimiter.len();
-    let mut partial = vec![];
+    let mut match_len = 0usize;
     loop {
         let (done, used) = {
             let available = ready!(reader.as_mut().poll_fill_buf(cx))?;
-            if let Some(i) = find_delimiter(
-                delimiter,
-                delimiter_len,
-                partial.iter().copied().chain(available.iter().copied()),
-            ) {
-                let j = i - partial.len();
-                buf.extend_from_slice(&available[..j]);
-                (true, j)
+            if let Some(i) = memchr(delimiter, &mut match_len, available) {
+                buf.extend_from_slice(&available[..i]);
+                (true, i)
             } else {
                 buf.extend_from_slice(available);
-                let available_len = available.len();
-                if available_len >= delimiter_len - 1 {
-                    let start = 1 + available_len - delimiter_len;
-                    partial = available[start..].to_vec();
-                } else {
-                    let partial_len = partial.len();
-                    if available_len + partial_len < delimiter_len {
-                        partial = partial[..]
-                            .iter()
-                            .chain(available.iter())
-                            .copied()
-                            .collect();
-                    } else {
-                        let start = 1 + available_len + partial_len - delimiter_len;
-                        partial = partial[start..]
-                            .iter()
-                            .chain(available.iter())
-                            .copied()
-                            .collect();
-                    }
-                }
                 (false, available.len())
             }
         };
@@ -96,20 +69,21 @@ pub(crate) fn read_until_slice_internal<R: AsyncBufRead + ?Sized>(
     }
 }
 
-fn find_delimiter(
-    delimiter: &[u8],
-    n: usize,
-    available: impl Iterator<Item = u8>,
-) -> Option<usize> {
-    let mut match_size = 0usize;
-    for (i, it) in available.enumerate() {
-        if delimiter[match_size] == it {
-            if match_size == n - 1 {
+/// Searches a partial needle in the haystack.
+///
+/// Returns the position of the end of the needle in the haystack if found.
+pub fn memchr(needle: &[u8], match_len: &mut usize, haystack: &[u8]) -> Option<usize> {
+    let haystack_len = haystack.len();
+    let needle_len = needle.len();
+    #[allow(clippy::needless_range_loop)]
+    for i in 0..haystack_len {
+        if haystack[i] == needle[*match_len] {
+            *match_len += 1;
+            if *match_len == needle_len {
                 return Some(i + 1);
             }
-            match_size += 1;
-        } else if match_size > 0 {
-            match_size = 0;
+        } else if *match_len > 0 {
+            *match_len = 0;
         }
     }
     None
