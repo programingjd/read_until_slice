@@ -49,11 +49,11 @@ pub(crate) fn read_until_slice_internal<R: AsyncBufRead + ?Sized>(
     buf: &mut Vec<u8>,
     read: &mut usize,
 ) -> Poll<io::Result<usize>> {
-    let mut match_len = 0usize;
+    let mut match_len = 0_usize;
     loop {
         let (done, used) = {
             let available = ready!(reader.as_mut().poll_fill_buf(cx))?;
-            if let Some(i) = memchr(delimiter, &mut match_len, available) {
+            if let Some(i) = memchr(delimiter, available, &mut match_len) {
                 buf.extend_from_slice(&available[..i]);
                 (true, i)
             } else {
@@ -69,10 +69,11 @@ pub(crate) fn read_until_slice_internal<R: AsyncBufRead + ?Sized>(
     }
 }
 
-/// Searches a partial needle in the haystack.
-///
-/// Returns the position of the end of the needle in the haystack if found.
-pub fn memchr(needle: &[u8], match_len: &mut usize, haystack: &[u8]) -> Option<usize> {
+/// Returns the first index matching the `needle` in the `haystack`. `match_len` specifies how
+/// many bytes from the needle were already matched during the previous lookup.
+/// If we reach the end of the `haystack` with a partial match, then this is a partial match,
+/// and we update the `match_len` value accordingly, even though we still return `None`.
+pub fn memchr(needle: &[u8], haystack: &[u8], match_len: &mut usize) -> Option<usize> {
     let haystack_len = haystack.len();
     let needle_len = needle.len();
     #[allow(clippy::needless_range_loop)]
