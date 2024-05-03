@@ -1,15 +1,15 @@
 [package]
 name = "read_until_slice"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 authors = ["Jerome David <programingjd@gmail.com>"]
 categories = ["asynchronous"]
 description = "AsyncBufRead::read_until extension to take a slice as a delimiter instead of a single u8."
-keywords = ["tokio","AsyncBufRead","read_until","slice","delimiter"]
+keywords = ["tokio", "AsyncBufRead", "read_until", "slice", "delimiter"]
 license = "MIT"
 repository = "https://github.com/programingjd/read_until_slice"
 include = [
-    "Cargo.toml", "src", "tests", "examples", "LICENSE","README.md"
+    "Cargo.toml", "src", "tests", "examples", "LICENSE", "README.md"
 ]
 [dependencies.tokio]
 version = "1.36"
@@ -17,7 +17,7 @@ default-features = false
 features = ["io-util"]
 
 [dependencies.pin-project-lite]
-version= "0.2"
+version = "0.2"
 default-features = false
 features = []
 
